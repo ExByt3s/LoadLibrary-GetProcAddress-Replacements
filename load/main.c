@@ -14,7 +14,6 @@ typedef FARPROC(WINAPI *GetProcAddressF)(HMODULE hModule, LPCSTR lpProcName);
 HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 {
 	PPEB pPeb = NULL;
-	
 #ifdef _M_IX86 
 	__asm
 	{
