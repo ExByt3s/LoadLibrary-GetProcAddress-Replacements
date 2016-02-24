@@ -13,8 +13,9 @@ typedef FARPROC(WINAPI *GetProcAddressF)(HMODULE hModule, LPCSTR lpProcName);
 
 HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 {
+	PPEB pPeb = NULL;
+	
 #ifdef _M_IX86 
-	PPEB pPeb;
 	__asm
 	{
 		push esi;
@@ -23,11 +24,15 @@ HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 		pop esi;
 	}
 #elif defined(_M_AMD64)
-	PPEB pPeb = (PPEB)__readgsqword(0x60);
+	pPeb = (PPEB)__readgsqword(0x60);
 #elif defined(_M_ARM)
 	PTEB pTeb = (PTEB)_MoveFromCoprocessor(15, 0, 13, 0, 2); // CP15_TPIDRURW
-	PPEB pPeb = (PPEB)pTeb->ProcessEnvironmentBlock;
+	if (pTEB)
+		pPeb = (PPEB)pTeb->ProcessEnvironmentBlock;
 #endif
+
+	if (pPeb == NULL)
+		return NULL;
 
 	PLDR_DATA_TABLE_ENTRY pLdrDataTableEntry = (PLDR_DATA_TABLE_ENTRY)pPeb->Ldr->InMemoryOrderModuleList.Flink;
 
