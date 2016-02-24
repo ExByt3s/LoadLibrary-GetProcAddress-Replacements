@@ -51,8 +51,6 @@ FARPROC WINAPI GetExportAddress(HMODULE hMod, const char *lpProcName)
 
 	LoadLibraryAF pLoadLibraryA = NULL;
 
-	DWORD i;
-
 	if (((DWORD_PTR)lpProcName >> 16) == 0)
 	{
 		WORD ordinal = LOWORD(lpProcName);
@@ -65,6 +63,7 @@ FARPROC WINAPI GetExportAddress(HMODULE hMod, const char *lpProcName)
 	}
 	else
 	{
+		DWORD i;
 		for (i = 0; i < pExportDirectory->NumberOfNames; i++)
 		{
 			char *szName = (char*)pBaseAddress + (DWORD_PTR)pNames[i];
