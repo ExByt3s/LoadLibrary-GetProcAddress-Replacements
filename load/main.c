@@ -11,27 +11,32 @@
 typedef HMODULE(WINAPI *LoadLibraryAF)(LPCSTR lpFileName);
 typedef FARPROC(WINAPI *GetProcAddressF)(HMODULE hModule, LPCSTR lpProcName);
 
+#ifdef _M_IX86 
+static PPEB __declspec(naked) GetPEBx86()
+{
+	__asm
+	{
+		mov eax, dword ptr fs : [0x30];
+		ret;
+	}
+}
+#endif
+
 HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 {
 	PPEB pPeb = NULL;
 	PLIST_ENTRY pListEntry = NULL;
 	PLDR_DATA_TABLE_ENTRY pLdrDataTableEntry = NULL;
-	
-	#ifdef _M_IX86 
-		__asm
-		{
-			push esi;
-			mov esi, dword ptr fs : [0x30];
-			mov pPeb, esi;
-			pop esi;
-		}
-	#elif defined(_M_AMD64)
-		pPeb = (PPEB)__readgsqword(0x60);
-	#elif defined(_M_ARM)
-		PTEB pTeb = (PTEB)_MoveFromCoprocessor(15, 0, 13, 0, 2); /* CP15_TPIDRURW */
-		if (pTeb)
-			pPeb = (PPEB)pTeb->ProcessEnvironmentBlock;
-	#endif
+
+#ifdef _M_IX86 
+	pPeb = GetPEBx86();
+#elif defined(_M_AMD64)
+	pPeb = (PPEB)__readgsqword(0x60);
+#elif defined(_M_ARM)
+	PTEB pTeb = (PTEB)_MoveFromCoprocessor(15, 0, 13, 0, 2); /* CP15_TPIDRURW */
+	if (pTeb)
+		pPeb = (PPEB)pTeb->ProcessEnvironmentBlock;
+#endif
 
 	if (pPeb == NULL)
 		return NULL;
