@@ -1,6 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <winternl.h>
+#include <malloc.h>
 
 #ifdef _M_AMD64
 #include <intrin.h>
@@ -8,16 +9,13 @@
 #include <armintr.h>
 #endif
 
-typedef HMODULE(WINAPI *LoadLibraryAF)(LPCSTR lpFileName);
-typedef FARPROC(WINAPI *GetProcAddressF)(HMODULE hModule, LPCSTR lpProcName);
-
 #ifdef _M_IX86 
-static PPEB __declspec(naked) GetPEBx86()
+static inline PPEB __declspec(naked) __forceinline GetPEBx86()
 {
 	__asm
 	{
 		mov eax, dword ptr fs : [0x30];
-		ret;
+		retn;
 	}
 }
 #endif
@@ -134,6 +132,8 @@ FARPROC WINAPI GetExportAddress(HMODULE hMod, const char *lpProcName)
 
 int main()
 {
+	typedef HMODULE(WINAPI *LoadLibraryAF)(LPCSTR lpFileName);
+	typedef FARPROC(WINAPI *GetProcAddressF)(HMODULE hModule, LPCSTR lpProcName);
 	HMODULE hKernel32 = GetModuleBaseAddress(L"KERNEL32.DLL");
 	LoadLibraryAF pLoadLibraryA = (LoadLibraryAF)GetExportAddress(hKernel32, "LoadLibraryA");
 	GetProcAddressF pGetProcAddress = (GetProcAddressF)GetExportAddress(hKernel32, "GetProcAddress");
