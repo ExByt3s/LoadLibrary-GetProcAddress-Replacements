@@ -2,7 +2,7 @@
 #include <Windows.h>
 #include <winternl.h>
 
-#if defined(_M_IX86) || defined(_M_X64)
+#ifdef _M_AMD64
 #include <intrin.h>
 #elif defined(_M_ARM)
 #include <armintr.h>
