@@ -64,7 +64,7 @@ FARPROC WINAPI GetExportAddress(HMODULE hMod, const char *lpProcName)
 	else
 	{
 		DWORD i;
-		for (i = 0; i < pExportDirectory->NumberOfNames; i++)
+		for (i = 0; i < pExportDirectory->NumberOfNames; ++i)
 		{
 			char *szName = (char*)pBaseAddress + (DWORD_PTR)pNames[i];
 			if (strcmp(lpProcName, szName) == 0)
