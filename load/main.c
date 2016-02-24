@@ -44,7 +44,7 @@ FARPROC WINAPI GetExportAddress(HMODULE hMod, const char *lpProcName)
 
 	void **ppFunctions = (void **)(pBaseAddress + pExportDirectory->AddressOfFunctions);
 	WORD *pOrdinals = (WORD *)(pBaseAddress + pExportDirectory->AddressOfNameOrdinals);
-	//char **pNames = (char **)(pBaseAddress + pExportDirectory->AddressOfNames);
+	/*char **pNames = (char **)(pBaseAddress + pExportDirectory->AddressOfNames); */
 	ULONG *pNames = (ULONG *)(pBaseAddress + pExportDirectory->AddressOfNames);
 
 	void *pAddress = NULL;
