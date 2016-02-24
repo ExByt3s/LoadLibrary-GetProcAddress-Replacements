@@ -1,9 +1,14 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <winternl.h>
-#include <intrin.h> 
 
-typedef HMODULE(WINAPI *LoadLibraryAF)(LPCSTR lpFileName);
+#if defined(_M_IX86) || defined(_M_X64)
+#include <intrin.h>
+#elif defined(_M_ARM)
+#include <armintr.h>
+#endif
+
+typedef HMODULE(WINAPI *LoadLibraryAF)(LPCWSTR lpFileName);
 typedef FARPROC(WINAPI *GetProcAddressF)(HMODULE hModule, LPCSTR lpProcName);
 
 HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
@@ -12,6 +17,9 @@ HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 	PPEB pPeb = (PPEB)__readfsdword(0x30);
 #elif _M_AMD64
 	PPEB pPeb = (PPEB)__readgsqword(0x60);
+#elif defined(_M_ARM)
+	PTEB pTeb = (PTEB)_MoveFromCoprocessor(15, 0, 13, 0, 2); // CP15_TPIDRURW
+	PPEB pPeb = (PPEB)pTeb->ProcessEnvironmentBlock
 #endif
 
 	PLDR_DATA_TABLE_ENTRY pLdrDataTableEntry = (PLDR_DATA_TABLE_ENTRY)pPeb->Ldr->InMemoryOrderModuleList.Flink;
@@ -49,7 +57,10 @@ FARPROC WINAPI GetExportAddress(HMODULE hMod, const char *lpProcName)
 
 	void *pAddress = NULL;
 
+	typedef HMODULE(WINAPI *LoadLibraryAF)(LPCSTR lpFileName);
 	LoadLibraryAF pLoadLibraryA = NULL;
+
+	DWORD i;
 
 	if (((DWORD_PTR)lpProcName >> 16) == 0)
 	{
@@ -63,8 +74,7 @@ FARPROC WINAPI GetExportAddress(HMODULE hMod, const char *lpProcName)
 	}
 	else
 	{
-		DWORD i;
-		for (i = 0; i < pExportDirectory->NumberOfNames; ++i)
+		for (i = 0; i < pExportDirectory->NumberOfNames; i++)
 		{
 			char *szName = (char*)pBaseAddress + (DWORD_PTR)pNames[i];
 			if (strcmp(lpProcName, szName) == 0)
@@ -101,7 +111,7 @@ FARPROC WINAPI GetExportAddress(HMODULE hMod, const char *lpProcName)
 
 		pAddress = GetExportAddress(hForward, szFunctionName);
 	}
-	
+
 	return pAddress;
 }
 
