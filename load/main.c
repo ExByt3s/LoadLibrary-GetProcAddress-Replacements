@@ -91,11 +91,12 @@ FARPROC WINAPI GetExportAddress(HMODULE hMod, const char *lpProcName)
 			return NULL;
 
 		hForward = pLoadLibraryA(szDllName);
-
-		if (hForward)
-			pAddress = GetExportAddress(hForward, szFunctionName);
-
 		free(szDllName);
+
+		if (!hForward)
+			return NULL;
+			
+		pAddress = GetExportAddress(hForward, szFunctionName);
 	}
 	return pAddress;
 }
