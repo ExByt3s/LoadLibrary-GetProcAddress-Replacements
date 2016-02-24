@@ -101,6 +101,7 @@ FARPROC WINAPI GetExportAddress(HMODULE hMod, const char *lpProcName)
 
 		pAddress = GetExportAddress(hForward, szFunctionName);
 	}
+	
 	return pAddress;
 }
 
