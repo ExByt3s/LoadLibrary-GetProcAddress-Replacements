@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <winternl.h>
 #include <malloc.h>
+#include <string.h>
 
 #ifdef _M_AMD64
 #include <intrin.h>
