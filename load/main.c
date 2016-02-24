@@ -14,21 +14,22 @@ typedef FARPROC(WINAPI *GetProcAddressF)(HMODULE hModule, LPCSTR lpProcName);
 HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 {
 	PPEB pPeb = NULL;
-#ifdef _M_IX86 
-	__asm
-	{
-		push esi;
-		mov esi, dword ptr fs : [0x30];
-		mov pPeb, esi;
-		pop esi;
-	}
-#elif defined(_M_AMD64)
-	pPeb = (PPEB)__readgsqword(0x60);
-#elif defined(_M_ARM)
-	PTEB pTeb = (PTEB)_MoveFromCoprocessor(15, 0, 13, 0, 2); /* CP15_TPIDRURW */
-	if (pTEB)
-		pPeb = (PPEB)pTeb->ProcessEnvironmentBlock;
-#endif
+	
+	#ifdef _M_IX86 
+		__asm
+		{
+			push esi;
+			mov esi, dword ptr fs : [0x30];
+			mov pPeb, esi;
+			pop esi;
+		}
+	#elif defined(_M_AMD64)
+		pPeb = (PPEB)__readgsqword(0x60);
+	#elif defined(_M_ARM)
+		PTEB pTeb = (PTEB)_MoveFromCoprocessor(15, 0, 13, 0, 2); /* CP15_TPIDRURW */
+		if (pTEB)
+			pPeb = (PPEB)pTeb->ProcessEnvironmentBlock;
+	#endif
 
 	if (pPeb == NULL)
 		return NULL;
