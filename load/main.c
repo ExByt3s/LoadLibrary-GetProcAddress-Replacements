@@ -2,19 +2,26 @@
 #include <Windows.h>
 #include <winternl.h>
 
-#if defined(_M_IX86) || defined(_M_AMD64)
+#if defined(_M_IX86) || defined(_M_X64)
 #include <intrin.h>
 #elif defined(_M_ARM)
 #include <armintr.h>
 #endif
 
-typedef HMODULE(WINAPI *LoadLibraryAF)(LPCWSTR lpFileName);
+typedef HMODULE(WINAPI *LoadLibraryAF)(LPCSTR lpFileName);
 typedef FARPROC(WINAPI *GetProcAddressF)(HMODULE hModule, LPCSTR lpProcName);
 
 HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 {
-#ifdef _M_IX86
-	PPEB pPeb = (PPEB)__readfsdword(0x30);
+#ifdef _M_IX86 
+	PPEB pPeb;
+	__asm
+	{
+		push esi;
+		mov esi, dword ptr fs : [0x30];
+		mov pPeb, esi;
+		pop esi;
+	}
 #elif defined(_M_AMD64)
 	PPEB pPeb = (PPEB)__readgsqword(0x60);
 #elif defined(_M_ARM)
