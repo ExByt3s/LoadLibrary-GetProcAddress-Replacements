@@ -10,7 +10,7 @@
 #endif
 
 #ifdef _M_IX86 
-static __inline PEB  __declspec(naked) __forceinline *GetPEBx86()
+static __inline PEB __declspec(naked) __forceinline *GetPEBx86()
 {
 	__asm
 	{
