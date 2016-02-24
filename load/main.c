@@ -10,7 +10,7 @@
 #endif
 
 #ifdef _M_IX86 
-static __inline PPEB __declspec(naked) __forceinline GetPEBx86()
+static __inline PEB  __declspec(naked) __forceinline *GetPEBx86()
 {
 	__asm
 	{
@@ -22,9 +22,9 @@ static __inline PPEB __declspec(naked) __forceinline GetPEBx86()
 
 HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 {
-	PPEB pPeb = NULL;
-	PLIST_ENTRY pListEntry = NULL;
-	PLDR_DATA_TABLE_ENTRY pLdrDataTableEntry = NULL;
+	PEB *pPeb = NULL;
+	LIST_ENTRY *pListEntry = NULL;
+	LDR_DATA_TABLE_ENTRY *pLdrDataTableEntry = NULL;
 
 #ifdef _M_IX86 
 	pPeb = GetPEBx86();
