@@ -37,7 +37,7 @@ HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 		return NULL;
 
 	pLdrDataTableEntry = (PLDR_DATA_TABLE_ENTRY)pPeb->Ldr->InMemoryOrderModuleList.Flink;
-	pListEntry = pListFirst = pPeb->Ldr->InMemoryOrderModuleList.Flink;
+	pListEntry = pPeb->Ldr->InMemoryOrderModuleList.Flink;
 
 	do
 	{
