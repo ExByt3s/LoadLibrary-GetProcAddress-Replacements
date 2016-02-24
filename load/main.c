@@ -2,7 +2,6 @@
 #include <Windows.h>
 #include <winternl.h>
 #include <malloc.h>
-#include <string.h>
 
 #ifdef _M_AMD64
 #include <intrin.h>
@@ -11,7 +10,7 @@
 #endif
 
 #ifdef _M_IX86 
-static inline PPEB __declspec(naked) __forceinline GetPEBx86()
+static __inline PPEB __declspec(naked)  __forceinline GetPEBx86()
 {
 	__asm
 	{
