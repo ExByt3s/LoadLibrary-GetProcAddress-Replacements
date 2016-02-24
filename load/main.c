@@ -15,7 +15,7 @@ HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 {
 	PPEB pPeb = NULL;
 	PLDR_DATA_TABLE_ENTRY pLdrDataTableEntry = NULL;
-	PLIST_ENTRY pListEntry = NULL, pListFirst = NULL;
+	PLIST_ENTRY pListEntry = NULL;
 	
 	#ifdef _M_IX86 
 		__asm
@@ -47,7 +47,7 @@ HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 		pListEntry = pListEntry->Flink;
 		pLdrDataTableEntry = (PLDR_DATA_TABLE_ENTRY)(pListEntry->Flink);
 
-	} while (pListEntry != pListFirst);
+	} while (pListEntry != pPeb->Ldr->InMemoryOrderModuleList.Flink);
 
 	return NULL;
 }
