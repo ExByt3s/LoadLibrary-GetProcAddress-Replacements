@@ -3,9 +3,6 @@
 #include <winternl.h>
 #include <intrin.h> 
 
-typedef HMODULE(WINAPI *LoadLibraryAF)(LPCSTR lpFileName);
-typedef FARPROC(WINAPI *GetProcAddressF)(HMODULE hModule, LPCSTR lpProcName);
-
 HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 {
 #ifdef _M_IX86 
@@ -102,7 +99,8 @@ int main()
 	HMODULE hKernel32 = GetModuleBaseAddress(L"KERNEL32.DLL"); 
 	LoadLibraryAF pLoadLibraryA = (LoadLibraryAF)GetExportAddress(hKernel32, "LoadLibraryA");
 	GetProcAddressF pGetProcAddress = (GetProcAddressF)GetExportAddress(hKernel32, "GetProcAddress");
-	 
+	typedef HMODULE(WINAPI *LoadLibraryAF)(LPCSTR lpFileName);
+	typedef FARPROC(WINAPI *GetProcAddressF)(HMODULE hModule, LPCSTR lpProcName);
 	typedef HMODULE(WINAPI *GetModuleHandleWF)(LPCWSTR lpModuleName); 
 
 	HMODULE hUser32 = pLoadLibraryA("user32.dll"); 
