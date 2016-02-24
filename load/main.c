@@ -13,14 +13,20 @@ HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 
 	PLDR_DATA_TABLE_ENTRY pLdrDataTableEntry = (PLDR_DATA_TABLE_ENTRY)pPeb->Ldr->InMemoryOrderModuleList.Flink;
 
-	PLIST_ENTRY pListEntry = pPeb->Ldr->InMemoryOrderModuleList.Flink;
-	while (lstrcmpiW(pLdrDataTableEntry->FullDllName.Buffer, moduleName) != 0)
+	PLIST_ENTRY pListEntry, pListFirst;
+	pListEntry = pListFirst = pPeb->Ldr->InMemoryOrderModuleList.Flink; 
+
+	do
 	{
+		if (lstrcmpiW(pLdrDataTableEntry->FullDllName.Buffer, moduleName) == 0)
+			return (HMODULE)pLdrDataTableEntry->Reserved2[0];
+
 		pListEntry = pListEntry->Flink;
 		pLdrDataTableEntry = (PLDR_DATA_TABLE_ENTRY)(pListEntry->Flink);
-	}
 
-	return (HMODULE)pLdrDataTableEntry->Reserved2[0];
+	} while (pListEntry != pListFirst);
+
+	return NULL;
 } 
 
 FARPROC WINAPI GetExportAddress(HMODULE hMod, const char *lpProcName)
