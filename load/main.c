@@ -111,7 +111,6 @@ int main()
 	LoadLibraryAF pLoadLibraryA = (LoadLibraryAF)GetExportAddress(hKernel32, "LoadLibraryA");
 	GetProcAddressF pGetProcAddress = (GetProcAddressF)GetExportAddress(hKernel32, "GetProcAddress");
 
-
 	typedef HMODULE(WINAPI *GetModuleHandleWF)(LPCWSTR lpModuleName);
 	HMODULE hUser32 = pLoadLibraryA("user32.dll");
 	FARPROC pMessageBox = pGetProcAddress(hUser32, "MessageBoxW");
