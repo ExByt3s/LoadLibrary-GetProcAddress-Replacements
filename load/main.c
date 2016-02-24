@@ -19,7 +19,7 @@ HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 	PPEB pPeb = (PPEB)__readgsqword(0x60);
 #elif defined(_M_ARM)
 	PTEB pTeb = (PTEB)_MoveFromCoprocessor(15, 0, 13, 0, 2); // CP15_TPIDRURW
-	PPEB pPeb = (PPEB)pTeb->ProcessEnvironmentBlock
+	PPEB pPeb = (PPEB)pTeb->ProcessEnvironmentBlock;
 #endif
 
 	PLDR_DATA_TABLE_ENTRY pLdrDataTableEntry = (PLDR_DATA_TABLE_ENTRY)pPeb->Ldr->InMemoryOrderModuleList.Flink;
