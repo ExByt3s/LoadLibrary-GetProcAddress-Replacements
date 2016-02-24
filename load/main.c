@@ -26,7 +26,7 @@ HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 #elif defined(_M_AMD64)
 	pPeb = (PPEB)__readgsqword(0x60);
 #elif defined(_M_ARM)
-	PTEB pTeb = (PTEB)_MoveFromCoprocessor(15, 0, 13, 0, 2); // CP15_TPIDRURW
+	PTEB pTeb = (PTEB)_MoveFromCoprocessor(15, 0, 13, 0, 2); /* CP15_TPIDRURW */
 	if (pTEB)
 		pPeb = (PPEB)pTeb->ProcessEnvironmentBlock;
 #endif
