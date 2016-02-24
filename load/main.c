@@ -3,6 +3,9 @@
 #include <winternl.h>
 #include <intrin.h> 
 
+typedef HMODULE(WINAPI *LoadLibraryAF)(LPCSTR lpFileName);
+typedef FARPROC(WINAPI *GetProcAddressF)(HMODULE hModule, LPCSTR lpProcName);
+
 HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 {
 #ifdef _M_IX86 
@@ -14,7 +17,7 @@ HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 	PLDR_DATA_TABLE_ENTRY pLdrDataTableEntry = (PLDR_DATA_TABLE_ENTRY)pPeb->Ldr->InMemoryOrderModuleList.Flink;
 
 	PLIST_ENTRY pListEntry, pListFirst;
-	pListEntry = pListFirst = pPeb->Ldr->InMemoryOrderModuleList.Flink; 
+	pListEntry = pListFirst = pPeb->Ldr->InMemoryOrderModuleList.Flink;
 
 	do
 	{
@@ -27,7 +30,7 @@ HMODULE WINAPI GetModuleBaseAddress(LPCWSTR moduleName)
 	} while (pListEntry != pListFirst);
 
 	return NULL;
-} 
+}
 
 FARPROC WINAPI GetExportAddress(HMODULE hMod, const char *lpProcName)
 {
@@ -45,24 +48,25 @@ FARPROC WINAPI GetExportAddress(HMODULE hMod, const char *lpProcName)
 	ULONG *pNames = (ULONG *)(pBaseAddress + pExportDirectory->AddressOfNames);
 
 	void *pAddress = NULL;
+
 	LoadLibraryAF pLoadLibraryA = NULL;
 
 	DWORD i;
 
-	if (((DWORD_PTR)lpProcName >> 16) == 0) 
+	if (((DWORD_PTR)lpProcName >> 16) == 0)
 	{
 		WORD ordinal = LOWORD(lpProcName);
-		DWORD dwOrdinalBase = pExportDirectory->Base; 
+		DWORD dwOrdinalBase = pExportDirectory->Base;
 
 		if (ordinal < dwOrdinalBase || ordinal >= dwOrdinalBase + pExportDirectory->NumberOfFunctions)
 			return NULL;
-		 
+
 		pAddress = (FARPROC)(pBaseAddress + (DWORD_PTR)ppFunctions[ordinal - dwOrdinalBase]);
 	}
-	else 
-	{ 
-		for (i = 0; i < pExportDirectory->NumberOfNames; i++) 
-		{ 
+	else
+	{
+		for (i = 0; i < pExportDirectory->NumberOfNames; i++)
+		{
 			char *szName = (char*)pBaseAddress + (DWORD_PTR)pNames[i];
 			if (strcmp(lpProcName, szName) == 0)
 			{
@@ -71,19 +75,19 @@ FARPROC WINAPI GetExportAddress(HMODULE hMod, const char *lpProcName)
 			}
 		}
 	}
-	
-	if ((char *)pAddress >= (char *)pExportDirectory && (char *)pAddress < (char *)pExportDirectory + pDataDirectory->Size) 
+
+	if ((char *)pAddress >= (char *)pExportDirectory && (char *)pAddress < (char *)pExportDirectory + pDataDirectory->Size)
 	{
 		char *szDllName, *szFunctionName;
 		HMODULE hForward;
-		
+
 		szDllName = _strdup((const char *)pAddress);
 		if (!szDllName)
 			return NULL;
 
 		pAddress = NULL;
 		szFunctionName = strchr(szDllName, '.');
-		*szFunctionName++ = 0; 
+		*szFunctionName++ = 0;
 
 		pLoadLibraryA = (LoadLibraryAF)GetExportAddress(GetModuleBaseAddress(L"KERNEL32.DLL"), "LoadLibraryA");
 
@@ -95,7 +99,7 @@ FARPROC WINAPI GetExportAddress(HMODULE hMod, const char *lpProcName)
 
 		if (!hForward)
 			return NULL;
-			
+
 		pAddress = GetExportAddress(hForward, szFunctionName);
 	}
 	return pAddress;
@@ -103,17 +107,16 @@ FARPROC WINAPI GetExportAddress(HMODULE hMod, const char *lpProcName)
 
 int main()
 {
-	HMODULE hKernel32 = GetModuleBaseAddress(L"KERNEL32.DLL"); 
+	HMODULE hKernel32 = GetModuleBaseAddress(L"KERNEL32.DLL");
 	LoadLibraryAF pLoadLibraryA = (LoadLibraryAF)GetExportAddress(hKernel32, "LoadLibraryA");
 	GetProcAddressF pGetProcAddress = (GetProcAddressF)GetExportAddress(hKernel32, "GetProcAddress");
-	typedef HMODULE(WINAPI *LoadLibraryAF)(LPCSTR lpFileName);
-	typedef FARPROC(WINAPI *GetProcAddressF)(HMODULE hModule, LPCSTR lpProcName);
-	typedef HMODULE(WINAPI *GetModuleHandleWF)(LPCWSTR lpModuleName); 
 
-	HMODULE hUser32 = pLoadLibraryA("user32.dll"); 
+
+	typedef HMODULE(WINAPI *GetModuleHandleWF)(LPCWSTR lpModuleName);
+	HMODULE hUser32 = pLoadLibraryA("user32.dll");
 	FARPROC pMessageBox = pGetProcAddress(hUser32, "MessageBoxW");
 
 	pMessageBox(NULL, L"It works!", L"Hello World!", MB_OK);
-	
+
 	return 0;
 }
